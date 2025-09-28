@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 extensions = ['sphinxext.rediraffe']
 
 master_doc = 'index'
