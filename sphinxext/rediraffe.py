@@ -418,7 +418,7 @@ class CheckRedirectsDiffBuilder(Builder):
                     rel_rename_to = (
                         f'"{str(PurePosixPath(hint_to.relative_to(src_path)))}"'
                     )
-                    with redirects_path.open('a') as redirects_file:
+                    with redirects_path.open('a', encoding='utf-8') as redirects_file:
                         redirects_file.write(f'{rel_rename_from} {rel_rename_to}\n')
                     logger.info(
                         '%s Renamed file %s has been redirected to %s in your redirects file!',
