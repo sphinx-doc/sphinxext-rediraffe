@@ -1,8 +1,10 @@
-extensions = ["sphinxext.rediraffe"]
+from __future__ import annotations
 
-master_doc = "index"
-exclude_patterns = ["_build"]
+extensions = ['sphinxext.rediraffe']
 
-html_theme = "basic"
+master_doc = 'index'
+exclude_patterns = ['_build']
 
-rediraffe_redirects = "fake-redirects.txt"
+html_theme = 'basic'
+
+rediraffe_redirects = 'fake-redirects.txt'

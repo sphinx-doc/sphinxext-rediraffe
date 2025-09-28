@@ -1,9 +1,11 @@
-extensions = ["sphinxext.rediraffe"]
+from __future__ import annotations
 
-master_doc = "index"
-exclude_patterns = ["_build"]
+extensions = ['sphinxext.rediraffe']
 
-html_theme = "basic"
+master_doc = 'index'
+exclude_patterns = ['_build']
 
-rediraffe_branch = "HEAD~1"
-rediraffe_redirects = "redirects.txt"
+html_theme = 'basic'
+
+rediraffe_branch = 'HEAD~1'
+rediraffe_redirects = 'redirects.txt'

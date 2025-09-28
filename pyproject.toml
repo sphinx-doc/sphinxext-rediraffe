@@ -1,0 +1,86 @@
+[build-system]
+requires = ["flit_core>=3.12"]
+build-backend = "flit_core.buildapi"
+
+# project metadata
+[project]
+name = "sphinxext-rediraffe"
+description = "Sphinx Extension that redirects non-existent pages to working pages"
+readme = "README.rst"
+urls.Code = "https://github.com/sphinx-doc/sphinxext-rediraffe/"
+urls.Documentation = "https://sphinxext-rediraffe.readthedocs.io/"
+urls.Download = "https://pypi.org/project/sphinxext-rediraffe/"
+urls.Homepage = "https://github.com/sphinx-doc/sphinxext-rediraffe/"
+urls."Issue tracker" = "https://github.com/sphinx-doc/sphinxext-rediraffe/issues"
+license = "MIT"
+license-files = [
+    "LICENCE.rst",
+]
+requires-python = ">=3.9"
+
+# Classifiers list: https://pypi.org/classifiers/
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Plugins",
+    "Environment :: Web Environment",
+    "Framework :: Sphinx :: Extension",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python",
+    "Topic :: Documentation :: Sphinx",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "Sphinx>=6.0",
+]
+dynamic = ["version"]
+
+[[project.authors]]
+name = "Vasista Vovveti"
+email = "vasistavovveti@gmail.com"
+
+[dependency-groups]
+docs = [
+    "furo>=2024",
+    "sphinx~=8.2.0",
+]
+lint = [
+    "ruff==0.13.2",
+]
+package = [
+    "betterproto==2.0.0b6",  # resolution fails without betterproto
+    "build",
+    "pypi-attestations==0.0.27",
+    "twine>=6.1",
+]
+test = [
+    "pytest",
+    "seleniumbase",
+]
+
+[tool.flit.module]
+name = "sphinxext.rediraffe"
+
+[tool.flit.sdist]
+include = [
+    # Documentation
+    "docs/",
+    # Tests
+    "tests/",
+    "tox.ini",
+]
+exclude = [
+    "docs/_build",
+]
+
+[tool.uv]
+default-groups = "all"
