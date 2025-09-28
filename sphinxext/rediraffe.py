@@ -250,14 +250,14 @@ def build_redirects(app: Sphinx, exception: Union[Exception, None]) -> None:
 
         if build_redirect_from.exists():
             logger.warning(
-                f'{yellow("(broken)")} {redirect_from} redirects to {redirect_to} but {build_redirect_from} already exists!'
+                f"{yellow('(broken)')} {redirect_from} redirects to {redirect_to} but {build_redirect_from} already exists!"
             )
             app.statuscode = 1
             continue
 
         if not build_redirect_to.exists():
             logger.warning(
-                f'{yellow("(broken)")} {redirect_from} redirects to {redirect_to} but {build_redirect_to} does not exist!'
+                f"{yellow('(broken)')} {redirect_from} redirects to {redirect_to} but {build_redirect_to} does not exist!"
             )
             app.statuscode = 1
             continue
@@ -280,7 +280,7 @@ def build_redirects(app: Sphinx, exception: Union[Exception, None]) -> None:
                 )
             )
             logger.info(
-                f'{green("(good)")} {redirect_from} {green("-->")} {redirect_to}'
+                f"{green('(good)')} {redirect_from} {green('-->')} {redirect_to}"
             )
             redirect_record[src_redirect_from.as_posix()] = src_redirect_to.as_posix()
 
@@ -379,7 +379,7 @@ class CheckRedirectsDiffBuilder(Builder):
                     f"deleted file {deleted_file} redirects to {absolute_redirects[deleted_file]}."
                 )
             else:
-                err_msg = f'{red("(broken)")} {deleted_file} was deleted but is not redirected!'
+                err_msg = f"{red('(broken)')} {deleted_file} was deleted but is not redirected!"
                 logger.error(err_msg)
                 self.app.statuscode = 1
 
@@ -394,7 +394,9 @@ class CheckRedirectsDiffBuilder(Builder):
 
             if self.name == "rediraffewritediff":
                 if perc >= self.app.config.rediraffe_auto_redirect_perc:
-                    rel_rename_from = f'"{str(PurePosixPath(renamed_file.relative_to(src_path)))}"'
+                    rel_rename_from = (
+                        f'"{str(PurePosixPath(renamed_file.relative_to(src_path)))}"'
+                    )
                     rel_rename_to = (
                         f'"{str(PurePosixPath(hint_to.relative_to(src_path)))}"'
                     )
