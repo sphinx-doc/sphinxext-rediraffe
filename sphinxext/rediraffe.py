@@ -395,7 +395,7 @@ class CheckRedirectsDiffBuilder(Builder):
                     absolute_redirects[deleted_file],
                 )
             else:
-                err_msg = f"{red('(broken)')} {deleted_file} was deleted but is not redirected!"
+                err_msg = f'{red("(broken)")} {deleted_file} was deleted but is not redirected!'
                 logger.error(err_msg)
                 self.app.statuscode = 1
 
@@ -405,8 +405,8 @@ class CheckRedirectsDiffBuilder(Builder):
             if renamed_file in absolute_redirects:
                 logger.info(
                     'renamed file %s redirects to %s.',
-                        renamed_file,
-                        absolute_redirects[renamed_file],
+                    renamed_file,
+                    absolute_redirects[renamed_file],
                 )
                 continue
 
@@ -418,13 +418,13 @@ class CheckRedirectsDiffBuilder(Builder):
                     rel_rename_to = (
                         f'"{str(PurePosixPath(hint_to.relative_to(src_path)))}"'
                     )
-                    with redirects_path.open("a") as redirects_file:
+                    with redirects_path.open('a') as redirects_file:
                         redirects_file.write(f'{rel_rename_from} {rel_rename_to}\n')
                     logger.info(
                         '%s Renamed file %s has been redirected to %s in your redirects file!',
-                            green('(okay)'),
-                            rel_rename_from,
-                            rel_rename_to,
+                        green('(okay)'),
+                        rel_rename_from,
+                        rel_rename_to,
                     )
                     continue
 

@@ -87,7 +87,7 @@ def test_builder_deleted_file_not_redirected_commit(app_init_repo):
     assert app_init_repo.statuscode == 1
 
 
-@pytest.mark.sphinx("rediraffecheckdiff", testroot="deleted_file_redirected_dict")
+@pytest.mark.sphinx('rediraffecheckdiff', testroot='deleted_file_redirected_dict')
 def test_builder_deleted_file_redirected_commit(app_init_repo):
     app_init_repo.build()
     assert app_init_repo.statuscode == 0

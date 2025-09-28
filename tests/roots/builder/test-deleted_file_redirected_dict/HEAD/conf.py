@@ -1,11 +1,11 @@
-extensions = ["sphinxext.rediraffe"]
+extensions = ['sphinxext.rediraffe']
 
-master_doc = "index"
-exclude_patterns = ["_build"]
+master_doc = 'index'
+exclude_patterns = ['_build']
 
-html_theme = "basic"
+html_theme = 'basic'
 
-rediraffe_branch = "HEAD~1"
+rediraffe_branch = 'HEAD~1'
 rediraffe_redirects = {
-    "another.rst": "index.rst",
+    'another.rst': 'index.rst',
 }
