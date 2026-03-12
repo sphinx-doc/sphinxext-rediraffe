@@ -288,6 +288,12 @@ class TestExtDirHtml:
         assert app.statuscode == 0
         ensure_redirect('another/index.html', 'mydir/index.html')
 
+    @pytest.mark.sphinx('dirhtml', testroot='rediraffe_dir_only')
+    def test_rediraffe_dir_only(self, app: Sphinx, ensure_redirect):
+        app.build()
+        assert app.statuscode == 0
+        ensure_redirect('another/index.html', 'mypage/')
+
     @pytest.mark.sphinx('dirhtml', testroot='simple', freshenv=False)
     def test_simple_rebuild(self, app_params, make_app, ensure_redirect):
         args, kwargs = app_params

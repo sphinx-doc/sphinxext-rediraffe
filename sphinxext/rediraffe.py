@@ -237,7 +237,11 @@ def build_redirects(app: Sphinx, exception: Exception | None) -> None:
                     src_redirect_from.parent / redirect_from_name / 'index.html'
                 )
             if redirect_to_name != 'index':
-                redirect_to = src_redirect_to.parent / redirect_to_name / 'index.html'
+                redirect_to = (
+                    src_redirect_to.parent / redirect_to_name
+                    if app.config.rediraffe_dir_only
+                    else src_redirect_to.parent / redirect_to_name / 'index.html'
+                )
 
         # absolute paths into the build dir
         build_redirect_from = Path(app.outdir) / redirect_from
@@ -472,6 +476,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_config_value('rediraffe_branch', '', None)
     app.add_config_value('rediraffe_template', None, None)
     app.add_config_value('rediraffe_auto_redirect_perc', 100, None)
+    app.add_config_value('rediraffe_dir_only', False, 'env')
 
     app.add_builder(CheckRedirectsDiffBuilder)
     app.add_builder(WriteRedirectsDiffBuilder)

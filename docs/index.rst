@@ -117,6 +117,13 @@ These values are placed in the :file:`conf.py` of your Sphinx project.
    The percentage as an integer representing the accuracy required before
    auto redirecting with the ``rediraffewritediff`` builder.
 
+.. confval:: rediraffe_dir_only
+   :type: :code-py:`bool`
+   :default: :code-py:`False`
+
+   Whether to include ``/index.html`` in destination URLs when using the ``dirhtml``
+   builder.
+
 Example Config
 ==============
 
