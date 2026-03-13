@@ -17,6 +17,8 @@ from sphinx.util.console import green, red, yellow  # pylint: disable=no-name-in
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
+    from os import PathLike
+
     from sphinx.application import Sphinx
     from sphinx.util.typing import ExtensionMetadata
 
@@ -137,9 +139,58 @@ def remove_suffix(docname: str, suffixes: list[str]) -> str:
     return docname
 
 
+def is_external(dest: str) -> bool:
+    """Return True if the redirect destination is a URL."""
+    return dest.startswith(('http://', 'https://'))
+
+
+def build_external_redirect(
+    app: Sphinx,
+    rediraffe_template: Template,
+    redirect_record: dict[str, str],
+    src_redirect_from: PathLike[str],
+    src_redirect_to: str,
+):
+    """Redirect to an external link."""
+
+    src_redirect_from = Path(PureWindowsPath(src_redirect_from))
+
+    redirect_from_name = remove_suffix(src_redirect_from.name, app.config.source_suffix)
+
+    redirect_from = src_redirect_from.parent / f'{redirect_from_name}.html'
+
+    if type(app.builder) is DirectoryHTMLBuilder and redirect_from_name != 'index':
+        redirect_from = src_redirect_from.parent / redirect_from_name / 'index.html'
+
+    build_redirect_from = Path(app.outdir) / redirect_from
+
+    build_redirect_from.parent.mkdir(parents=True, exist_ok=True)
+
+    with build_redirect_from.open('w', encoding='utf-8') as f:
+        f.write(
+            rediraffe_template.render(
+                rel_url=src_redirect_to,
+                from_file=src_redirect_from,
+                to_file=src_redirect_to,
+                from_url=redirect_from,
+                to_url=src_redirect_to,
+            )
+        )
+
+    logger.info(
+        '%s %s %s %s',
+        green('(good)'),
+        redirect_from,
+        green('-->'),
+        src_redirect_to,
+    )
+
+    redirect_record[src_redirect_from.as_posix()] = src_redirect_to
+
+
 def build_redirects(app: Sphinx, exception: Exception | None) -> None:
     """
-    Build amd write redirects
+    Build and write redirects
     """
     redirect_json_file = Path(app.outdir) / REDIRECT_JSON_NAME
     if redirect_json_file.exists():
@@ -218,6 +269,17 @@ def build_redirects(app: Sphinx, exception: Exception | None) -> None:
 
     # write redirects
     for src_redirect_from, src_redirect_to in redirects.items():
+        # Offload to helper function if the destination path is external
+        if is_external(src_redirect_to):
+            build_external_redirect(
+                app,
+                rediraffe_template,
+                redirect_record,
+                src_redirect_from,
+                src_redirect_to,
+            )
+            continue
+
         # Normalize path - src_redirect_.* is relative so drive letters aren't an issue.
         src_redirect_from = Path(PureWindowsPath(src_redirect_from))
         src_redirect_to = Path(PureWindowsPath(src_redirect_to))

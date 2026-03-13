@@ -113,6 +113,18 @@ class TestExtHtml:
         app.build()
         assert app.statuscode == 1
 
+    @pytest.mark.sphinx('html', testroot='external')
+    def test_external(self, app: Sphinx, ensure_redirect):
+        app.build()
+        assert app.statuscode == 0
+        assert 'https://github.com/sphinx-doc/sphinxext-rediraffe' in (
+            Path(app.outdir) / 'another.html'
+        ).read_text(encoding='utf-8')
+        assert 'http://github.com/sphinx-doc/sphinxext-rediraffe' in (
+            Path(app.outdir) / 'yet-another.html'
+        ).read_text(encoding='utf-8')
+        ensure_redirect('internal-src.html', 'index.html')
+
     @pytest.mark.sphinx('html', testroot='no_rediraffe_file')
     def test_no_rediraffe_file(self, app: Sphinx):
         app.build()

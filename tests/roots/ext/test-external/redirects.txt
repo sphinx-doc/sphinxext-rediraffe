@@ -1,0 +1,3 @@
+another.rst https://github.com/sphinx-doc/sphinxext-rediraffe
+yet-another.rst http://github.com/sphinx-doc/sphinxext-rediraffe
+internal-src.rst index.rst
