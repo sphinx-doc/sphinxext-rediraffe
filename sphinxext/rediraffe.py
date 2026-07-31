@@ -5,7 +5,9 @@ import re
 import subprocess
 from os.path import relpath
 from pathlib import Path, PurePosixPath, PureWindowsPath
+from urllib.parse import urlsplit
 
+from docutils import nodes
 from jinja2 import Environment, FileSystemLoader, Template
 from sphinx.builders import Builder
 from sphinx.builders.dirhtml import DirectoryHTMLBuilder
@@ -14,6 +16,7 @@ from sphinx.builders.linkcheck import CheckExternalLinksBuilder
 from sphinx.errors import ExtensionError
 from sphinx.util import logging
 from sphinx.util.console import green, red, yellow  # pylint: disable=no-name-in-module
+from sphinx.util.docutils import SphinxDirective
 
 TYPE_CHECKING = False
 if TYPE_CHECKING:
@@ -46,6 +49,36 @@ DEFAULT_REDIRAFFE_TEMPLATE = Template(
 )
 REDIRECT_JSON_NAME = '_rediraffe_redirected.json'
 RE_OBJ = re.compile(r"(?:(\"|')(.*?)\1|(\S+))\s+(?:(\"|')(.*?)\4|(\S+))")
+
+ANCHORMAP_JSON_ID = 'rediraffe-anchormap'
+ANCHORMAP_JS_NAME = 'rediraffe_anchormap.js'
+ANCHORMAP_JS = """\
+const script = document.getElementById("rediraffe-anchormap");
+const redirects = JSON.parse(script.textContent);
+
+function redirectAnchor() {
+    const anchor = window.location.hash.slice(1);
+    if (!anchor) {
+        return;
+    }
+
+    if (document.getElementById(anchor)) {
+        return;
+    }
+
+    const target = redirects[anchor];
+    if (!target) {
+        return;
+    }
+    const targetUrl = new URL(target, window.location.href).href;
+    if (targetUrl !== window.location.href) {
+        window.location.replace(targetUrl);
+    }
+}
+
+window.addEventListener("hashchange", redirectAnchor);
+redirectAnchor();
+"""
 
 READTHEDOCS_BUILDERS = ['readthedocs', 'readthedocsdirhtml']
 
@@ -303,6 +336,103 @@ def build_redirects(app: Sphinx, exception: Exception | None) -> None:
     redirect_json_file.write_text(json.dumps(redirect_record), encoding='utf8')
 
 
+class AnchorMapEntryNode(nodes.Element):
+    pass
+
+
+class AnchorMap(SphinxDirective):
+    """Collect client-side redirects for HTML anchors removed from this page."""
+
+    has_content = True
+
+    def run(self) -> list[nodes.Node]:
+        self.assert_has_content()
+
+        entries = []
+        messages = []
+
+        for index, line in enumerate(self.content):
+            if not (line := line.strip()):
+                continue
+
+            old_anchor, sep, target = line.partition(': ')
+            old_anchor, target = old_anchor.strip(), target.strip()
+
+            if not sep or not old_anchor or not target:
+                raise self.error(
+                    "anchormap entries should be like: 'old-html-fragment: target'"
+                )
+
+            children, parse_messages = self.state.inline_text(
+                target, self.content_offset + index
+            )
+            entry = AnchorMapEntryNode('', *children, old_anchor=old_anchor)
+            self.set_source_info(entry)
+            entries.append(entry)
+            messages.extend(parse_messages)
+
+        if not entries:
+            raise self.error('anchormap must contain at least one entry')
+
+        return entries + messages
+
+
+def process_anchor_maps(
+    app: Sphinx,
+    doctree: nodes.document,
+    _docname: str,
+) -> None:
+    redirects = {}
+
+    for entry in list(doctree.findall(AnchorMapEntryNode)):
+        target = None
+        references = list(entry.findall(nodes.reference))
+
+        if len(references) == 1:
+            if refuri := references[0].get('refuri'):
+                parts = urlsplit(refuri)
+                if not parts.scheme and not parts.netloc:  # Check it's internal
+                    target = refuri
+            elif refid := references[0].get('refid'):
+                target = f'#{refid}'
+
+        if target is not None:
+            redirects[entry['old_anchor']] = target
+
+        entry.parent.remove(entry)
+
+    if app.builder.format == 'html' and not app.builder.embedded:
+        doctree['anchor_redirects'] = redirects
+
+
+def add_anchor_redirects_to_context(
+    app: Sphinx,
+    _pagename: str,
+    _templatename: str,
+    _context: dict[str, object],
+    doctree: nodes.document | None,
+) -> None:
+    if doctree is None:
+        return
+
+    if redirects := doctree.get('anchor_redirects'):
+        # Called during html-page-context, these only apply to this page.
+        app.add_js_file(
+            None,
+            body=json.dumps(redirects),
+            id=ANCHORMAP_JSON_ID,
+            type='application/json',
+        )
+        app.add_js_file(ANCHORMAP_JS_NAME, type='module')
+
+
+def write_anchormap_js(app: Sphinx, exc: Exception | None) -> None:
+    if app.builder.format == 'html' and not app.builder.embedded and exc is None:
+        static_dir = Path(app.outdir) / '_static'
+        static_dir.mkdir(parents=True, exist_ok=True)
+        (static_dir / ANCHORMAP_JS_NAME).write_text(ANCHORMAP_JS, encoding='utf-8')
+
+
 class CheckRedirectsDiffBuilder(Builder):
     name = 'rediraffecheckdiff'
 
@@ -476,6 +606,12 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_builder(CheckRedirectsDiffBuilder)
     app.add_builder(WriteRedirectsDiffBuilder)
     app.connect('build-finished', build_redirects)
+
+    app.add_directive('anchormap', AnchorMap)
+    app.add_node(AnchorMapEntryNode)
+    app.connect('doctree-resolved', process_anchor_maps)
+    app.connect('html-page-context', add_anchor_redirects_to_context)
+    app.connect('build-finished', write_anchormap_js)
 
     return {
         'version': __version__,

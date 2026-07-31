@@ -67,6 +67,29 @@ Note: The auto redirect builder only works with a configuration file.
 
 Note: Deleted files cannot be added to your redirects file automatically.
 
+Anchor redirects
+----------------
+
+Rediraffe's redirects work at the page level.
+When a section is moved or removed instead, old ``#anchor`` links out in the
+wild break silently. The ``anchormap`` directive lets you declare redirects for
+removed HTML anchors next to the content. They are resolved at build time,
+embedded in the page as JSON, and a small script redirects visitors from the
+stale anchor to its new location.
+
+Declare redirects in the document the old anchors used to live on:
+
+.. code-block:: rst
+
+   .. anchormap::
+
+      removed-anchor: :ref:`new-target`
+      other-removed-anchor: :doc:`elsewhere`
+
+Each entry is ``old-html-fragment: target``, where the target is inline
+reStructuredText that must resolve to exactly one internal link.
+The directive produces no output. Visiting the page with ``#removed-anchor`` in
+the URL redirects to the new target instead.
 
 Options
 =======
