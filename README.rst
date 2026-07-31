@@ -21,7 +21,8 @@ Sphinx extension to redirect files
 
 This Sphinx extension redirects non-existent pages to working pages.
 Rediraffe can also check that deleted or renamed files in your git repo
-are redirected.
+are redirected, and client-side redirects for removed HTML anchors can
+be declared with the ``anchormap`` directive.
 
 Rediraffe creates a graph of all specified redirects and traverses it
 to point all internal urls to leaf urls.
